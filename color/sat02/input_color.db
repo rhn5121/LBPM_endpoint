@@ -1,0 +1,62 @@
+Color {
+protocol = "fractional flow"
+capillary_number = 1e-4            // capillary number for the displacement
+timestepMax = 10000000              // maximum timtestep
+alpha = 0.005                      // controls interfacial tension
+rhoA = 1.0                         // controls the density of fluid A
+rhoB = 1.0                         // controls the density of fluid B
+tauA = 0.7                         // controls the viscosity of fluid A
+tauB = 0.7                         // controls the viscosity of fluid B
+F = 0, 0, 1.0e-5                   // body force
+WettingConvention = "SCAL"         // convention for sign of wetting affinity
+ComponentLabels = 0       // image labels for solid voxels
+ComponentAffinity = 1.0  // controls the wetting affinity for each label
+Restart = false
+}
+
+MRT {
+tau = 0.7
+F = 0.0, 0.0, 1.0e-5
+timestepMax = 100000
+tolerance = 0.01
+}
+
+Domain {
+Filename = "fw_0_curvature_seg.raw.morphdrain.raw"
+ReadType = "8bit"              // data type
+N = 200, 200, 200          // size of original image
+nproc = 1, 2, 2                // process grid
+n = 200, 100, 100 
+offset = 0, 0, 0         // offset to read sub-domain
+InletLayers = 0, 0, 5          // number of mixing layers at the inlet
+OutletLayers = 0, 0, 5         // number of mixing layers at the outlet
+voxel_length = 5.4            // voxel length (in microns)
+ReadValues = 0, 1, 2   // labels within the original image
+WriteValues = 0, 1, 2   // associated labels to be used by LBPM
+BC = 0                         // boundary condition type (0 for periodic)
+Sw = 0.2 // target saturation after the morphological drainage
+}
+Analysis {
+analysis_interval = 100000           // logging interval for timelog.csv
+subphase_analysis_interval = 100000  // loggging interval for subphase.csv
+visualization_interval = 1000000    // interval to write visualization files
+N_threads = 1                      // number of analysis threads (GPU version only)
+restart_interval = 100000         // interval to write restart file
+restart_file = "Restart"           // base name of restart file
+}
+Visualization {
+format = "hdf5"
+visualization_interval = 1000000
+save_8bit_raw = true  // write labeled 8-bit binary files with phase assignments
+save_phase_field = false  // save phase field within SILO database
+save_pressure = false    // save pressure field within SILO database
+save_velocity = false    // save velocity field within SILO database
+write_silo = false
+}
+FlowAdaptor {
+min_steady_timesteps = 200000     // minimum number of timesteps per steady point
+max_steady_timesteps = 500000     // maximum number of timesteps per steady point
+mass_fraction_factor = 0.006      // controls the rate of mass seeding in adaptive step
+fractional_flow_increment = 0.2  // saturation change after each steady point
+endpoint_threshold = 0.1          // endpoint exit criterion (based on flow rates)
+}
